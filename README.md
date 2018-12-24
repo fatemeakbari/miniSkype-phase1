@@ -1,0 +1,1 @@
+# miniSkype-phase1
