@@ -1,0 +1,80 @@
+
+
+
+
+<!DOCTYPE html>
+<html>
+<body>
+<script src="/static/script.js" charset="utf-8"></script>
+
+<h1>sign in </h1>
+username: <input id="username0" type="text" value="samin"></br>
+password: <input id="password0" type="text" value="saminpass"></br>
+email: <input id="email0" type="text" value="saminpass"></br>
+<button type="button" onclick="signin()">signin</button>
+
+
+</br></br>
+<h1>login</h1>
+username: <input id="username" type="text" value="samin"></br>
+password: <input id="password" type="text" value="saminpass"></br>
+<button type="button" onclick="login()">login</button>
+
+</br></br>
+<h1>create room</h1>
+callee username: <input id="calleeUsername" type="text" value="sara"></br> 
+<button type="button" onclick="createRoom()">createRoom</button>
+
+</br></br>
+<h1>join</h1>
+ 
+<button type="button" onclick="join()">join</button>
+
+<pre id="login"></pre>
+<pre id="signin"></pre>
+<pre id="createRoom"></pre>
+<pre id="invite"></pre>
+<pre id="roomID"></pre>
+<pre id="info2"></pre>
+<pre id="accept"></pre>
+<pre id="caller"></pre>
+</body>
+</html>
+
+
+<script >
+	
+
+var own = document.getElementById('username').value;
+var source = new EventSource("{{ url_for('sse.stream') }}");
+    source.addEventListener(own, function(event) {
+        var data = JSON.parse(event.data);
+        
+        if(data.state == 'invite')
+        {
+            
+            location.replace('http://0.0.0.0:5008/chatRoom')
+            document.getElementById('invite').innerHTML ="you have request from "+data.callerUsername;
+            caller = data.callerUsername;
+            document.getElementById('caller').innerHTML = caller;
+
+        }
+        else if(data.state == "accept")
+        {
+            document.getElementById('accept').innerHTML =data.message;
+            location.replace('http://0.0.0.0:5008/chatRoom')
+
+        }
+
+    }, false);
+    source.addEventListener('error', function(event) {
+        alert("Failed to connect to event stream. Is Redis running?");
+    }, false);
+
+
+
+
+
+
+
+</script>
