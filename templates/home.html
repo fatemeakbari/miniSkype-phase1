@@ -1,0 +1,110 @@
+<script type="text/javascript" src="jquery-1.4.2.js"></script>
+
+
+
+<!DOCTYPE html>
+<html>
+<body>
+<script src="/static/script.js" charset="utf-8"></script>
+
+</br>
+<h1>login</h1>
+calleeUsername: <input id="calleeUsername" type="text" ></br>
+<button type="button" onclick="createRoom()">create</button>
+</br>
+
+</br>
+<h1>join</h1>
+<button type="button" onclick="join()">join</button>
+</br>
+
+<pre id="createRoom"></pre>
+<pre id="invite"></pre>
+<pre id="info2"></pre>
+<pre id="accept"></pre>
+accept
+</body>
+</html>
+
+
+<script >
+ 
+ 
+var session_id = '{{session_id}}';
+var username = '{{username}}';
+var calleeEvent = '{{username}}'+'calleeEvent';
+var callerEvent = '{{username}}'+'callerEvent';
+var startOffer = 0;
+
+function createRoom(){
+
+    var calleeUsername =document.getElementById('calleeUsername').value;
+    var ajax_post = function(url, callback) {
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+            var data= JSON.parse(xmlhttp.responseText);
+            callback(data);}
+    };
+
+    xmlhttp.open("POST", url, true);
+    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xmlhttp.send(JSON.stringify({ "calleeUsername": calleeUsername, "session_id": session_id}));
+};
+
+    ajax_post('api/createRoom', function(data) {
+        document.getElementById('createRoom').innerHTML = data['status']+' '+ data['message'];
+        roomID = data['roomID'];
+        callerUsername = data['callerUsername'];
+       
+    });  
+}
+
+
+
+
+var source = new EventSource("{{ url_for('sse.stream') }}");
+
+source.addEventListener(calleeEvent, function(event) {
+        var data = JSON.parse(event.data);
+        document.getElementById('invite').innerHTML ="you have request from "+data.callerUsername+ data.roomID;
+        callerUsername = data.callerUsername;
+        roomID = data.roomID;
+}, false);
+
+source.addEventListener(callerEvent, function(event) {
+
+        var data = JSON.parse(event.data);
+        document.getElementById('accept').innerHTML =data.message;
+        location.replace('http://0.0.0.0:5006/createVideoCall')
+
+}, false);
+
+
+function join(){
+
+        
+        var ajax_get = function(url, callback) {
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+		location.replace('http://0.0.0.0:5006/joinVideoCall')
+                var data = JSON.parse(xmlhttp.responseText);
+                    callback(data);}
+        };
+ 
+        xmlhttp.open("POST", url, true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({ "session_id": session_id, "caller": callerUsername, 'roomID':roomID}));
+    };
+ 
+    ajax_get('api/join', function(data) {
+        
+        document.getElementById('info2').innerHTML = JSON.stringify(data, null, '   ');
+        });
+    
+}
+
+
+</script>

@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+<script src="/static/script.js" charset="utf-8"></script>
+</br>
+    <h1>sign in </h1>
+    username: <input id="username0" type="text" value="samin"></br>
+    password: <input id="password0" type="text" value="saminpass"></br>
+    email: <input id="email0" type="text" value="saminpass">
+    <button type="button" onclick="signin()">signin</button>
+</br>
+    <h1>login</h1>
+    username: <input id="username" type="text" value="user0"></br>
+    password: <input id="password" type="text" value="pass"></br>
+    <button type="button" onclick="login()">login</button>
+</br>
+
+</body>
+</html>
+
+
+<script >
+	
+function login(){
+
+    username = document.getElementById('username').value;
+    password = document.getElementById('password').value;
+
+    var ajax_post= function(url) {
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                
+                    var data = JSON.parse(xmlhttp.responseText);
+                    location.replace('http://0.0.0.0:5006/home?username='+data['username']+'&session_id='+data['session_id'])
+                    }
+        };
+ 
+        xmlhttp.open("POST", url, true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({ "username": username, "password": password}));
+    };
+ 
+    ajax_post('api/login');
+
+}
+
+
+
+
+
+
+
+function signin(){
+
+    username = document.getElementById('username0').value;
+    password = document.getElementById('password0').value;
+    email = document.getElementById('email0').value;
+
+    var ajax_post = function(url, callback) {
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                
+                    var data = JSON.parse(xmlhttp.responseText);
+                    callback(data); }
+        };
+ 
+        xmlhttp.open("POST", url, true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({ "username": username, "password": password, 'email':email}));
+    };
+ 
+    ajax_post('api/signin', function(data) {
+        
+        document.getElementById('signin').innerHTML = data['status']+' '+ data['message'];
+        session_id = data['session_id']
+          
+    });
+
+}
+
+
+
+</script>
